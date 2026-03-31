@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Home</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<style>
+    .navbar {
+        background-color: #d9edf7;
+    }
+    .anchor{
+        margin: 6px;
+        background-color: #d9edf7;
+        border-color: #d9edf7;
+    }
+
+    input, label {
+        display:block;
+    }
+</style>
+
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <h2>Home</h2>
+        </div>
+    </div>
+</nav>
+
+<br><br><br><br><br><br><br>
+
+<div class="container">
+    <div class="row">
+
+        <h1>
+            Hi <span th:text="${user.name}"></span>
+        </h1>
+
+        <div class="user-info">
+            <h3>Your Details:</h3>
+
+            <p>
+                <strong>Email:</strong>
+                <span th:text="${user.email}"></span>
+                <span th:if="${needUpdateEmail}" class="text-danger">
+                    Please update your email
+                </span>
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                <span th:text="${user.phone}"></span>
+                <span th:if="${needUpdatePhone}" class="text-danger">
+                    Please update your phone number
+                </span>
+            </p>
+        </div>
+
+        <div class="form-group">
+            <form th:action="@{/edit-profile}" method="get" style="display:inline-block;">
+                <button type="submit" class="btn btn-primary">
+                    Edit profile
+                </button>
+            </form>
+            <form th:action="@{/change-password}"
+                  th:if="${user.isLocalUser}"
+                  method="get" style="display:inline-block;">
+                <button type="submit" class="btn btn-primary">
+                    Change password
+                </button>
+            </form>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    Logout
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+            window.location.reload();
+        }
+    });
+</script>
+
+</body>
+</html>
