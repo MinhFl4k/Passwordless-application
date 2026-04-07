@@ -43,7 +43,7 @@
         </div>
 
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Log In </button>
+            <button type="submit" class="btn btn-primary">Log In</button>
         </div>
         <div class="form-group">
             <span> Don't have an account? <a href="/" th:href="@{/signup}">Signup here</a></span>
@@ -64,6 +64,8 @@
         <a th:href="@{/oauth2/authorization/facebook}" class="btn btn-dark">
             <i class="fa fa-facebook"></i> Login with Facebook
         </a>
+
+        <a href="/" th:href="@{/otp-login}" class="btn btn-danger">Login with OTP</a>
     </div>
     <hr>
 </div>

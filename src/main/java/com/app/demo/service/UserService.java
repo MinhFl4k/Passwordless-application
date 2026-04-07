@@ -8,7 +8,7 @@ import com.app.demo.model.User;
 import org.springframework.security.core.Authentication;
 
 public interface UserService {
-    User signupUser(
+    void signupUser(
             UserSignupDto userSignupDto
     ) throws IllegalArgumentException;
 

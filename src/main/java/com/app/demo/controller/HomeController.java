@@ -4,9 +4,12 @@ import com.app.demo.dto.request.UserSignupDto;
 import com.app.demo.dto.request.UserUpdateDto;
 import com.app.demo.dto.request.ChangePasswordDTO;
 import com.app.demo.dto.response.UserResponseDto;
+import com.app.demo.service.EmailService;
+import com.app.demo.service.OtpService;
 import com.app.demo.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 
@@ -21,19 +25,62 @@ import java.security.Principal;
 public class HomeController {
 
     private final UserService userService;
+    private final EmailService emailService;
+    private final OtpService otpService;
 
-    @Autowired
-    public HomeController(UserService userService) {
+    public HomeController(UserService userService, EmailService emailService, OtpService otpService) {
         this.userService = userService;
+        this.emailService = emailService;
+        this.otpService = otpService;
     }
 
     @GetMapping("/login")
-    public String showLoginPage() {
+    public String showLoginPage(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/home";
+        }
         return "login";
     }
 
+    @GetMapping("/otp-login")
+    public String showOtpLoginPage(HttpSession session, Model model, Authentication authentication) {
+
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/home";
+        }
+        Object error = session.getAttribute("FLASH_ERROR");
+
+        if (error != null) {
+            model.addAttribute("error", error);
+            session.removeAttribute("FLASH_ERROR");
+        }
+        model.addAttribute("email", session.getAttribute("email"));
+
+        return "otp-login";
+    }
+
+    @PostMapping("/send-otp")
+    public String sendOtp(@RequestParam("username") String email,
+                          HttpSession session) {
+        try {
+            String otp = otpService.generateOtp(email);
+            emailService.sendOtp(email, otp);
+            session.setAttribute("email", email);
+
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+        }
+        return "redirect:/otp-login?sent=true";
+    }
+
     @GetMapping("/signup")
-    public String showSignupPage(Model model) {
+    public String showSignupPage(Model model, Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/home";
+        }
         model.addAttribute("user", new UserSignupDto());
         return "signup";
     }
@@ -91,7 +138,7 @@ public class HomeController {
     @GetMapping("/change-password")
     public String showChangePasswordPage(Model model) {
         model.addAttribute("passwordDto", new ChangePasswordDTO());
-        return "changePassword";
+        return "change-password";
     }
 
     @PostMapping("/change-password")
@@ -101,7 +148,7 @@ public class HomeController {
             Principal principal
     ) {
         if (result.hasErrors()) {
-            return "changePassword";
+            return "change-password";
         }
 
         String email = principal.getName();

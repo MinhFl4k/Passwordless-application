@@ -2,29 +2,52 @@ package com.app.demo.config;
 
 import com.app.demo.dto.custom.CustomUserDetails;
 import com.app.demo.enums.AuthProvider;
+import com.app.demo.security.OtpAuthenticationFilter;
+import com.app.demo.security.OtpAuthenticationProvider;
+import com.app.demo.security.OtpFailureHandler;
 import com.app.demo.service.CustomUserDetailService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
-    private final CustomUserDetailService customUserDetailsService;
+    @Autowired
+    private CustomUserDetailService customUserDetailsService;
 
-    public SecurityConfig(CustomUserDetailService customUserDetailsService) {
-        this.customUserDetailsService = customUserDetailsService;
-    }
+    @Autowired
+    private OtpAuthenticationProvider otpAuthenticationProvider;
+
+    @Autowired
+    private OtpFailureHandler otpFailureHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+
+        OtpAuthenticationFilter otpFilter = new OtpAuthenticationFilter();
+        otpFilter.setAuthenticationManager(authenticationManager);
+        otpFilter.setFilterProcessesUrl("/otp-login-process");
+
+        otpFilter.setAuthenticationFailureHandler(otpFailureHandler);
+
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/signup", "/css/**", "/js/**").permitAll()
+                        .requestMatchers(
+                                "/login",
+                                "/signup",
+                                "/otp-login",
+                                "/otp-login-process",
+                                "/send-otp",
+                                "/css/**",
+                                "/js/**"
+                        ).permitAll()
 
                         .requestMatchers("/change-password")
                         .access((auth, context) -> {
@@ -37,6 +60,9 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
+                .authenticationProvider(otpAuthenticationProvider)
+
+                .addFilterBefore(otpFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
@@ -58,7 +84,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .headers(headers -> headers
-                        .cacheControl(cache -> cache.disable())
+                        .cacheControl(cache -> {})
                 )
 
                 .userDetailsService(customUserDetailsService);
@@ -67,8 +93,9 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script th:src="@{/js/otp.js}"></script>
+</head>
+<style>
+    .navbar {
+        background-color: #d9edf7;
+    }
+</style>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <h2>Home</h2>
+        </div>
+    </div>
+</nav>
+
+<br><br><br><br><br><br><br>
+
+<div class="container">
+    <h1>Login using OTP</h1>
+
+    <form th:action="@{/send-otp}" method="post">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="username" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="sendOtpBtn">Send OTP</button>
+    </form>
+
+    <hr>
+
+    <form th:action="@{/otp-login-process}" method="post">
+
+        <input type="hidden" name="username" th:value="${email}" />
+
+        <div class="form-group">
+            <label>OTP</label>
+            <input type="text" name="otp" class="form-control" required>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success">Login</button>
+    </form>
+
+    <hr>
+</div>
+</body>
+</html>

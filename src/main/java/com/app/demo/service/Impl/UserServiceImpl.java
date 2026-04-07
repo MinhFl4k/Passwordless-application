@@ -8,31 +8,28 @@ import com.app.demo.enums.AuthProvider;
 import com.app.demo.model.User;
 import com.app.demo.repository.UserRepository;
 import com.app.demo.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
     @Override
-    public User signupUser(UserSignupDto userSignupDto) throws IllegalArgumentException {
+    public void signupUser(UserSignupDto userSignupDto) throws IllegalArgumentException {
 
         String email = userSignupDto.getEmail();
 
@@ -51,7 +48,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userSignupDto.getPassword()));
         user.setProvider(AuthProvider.LOCAL);
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     @Override
