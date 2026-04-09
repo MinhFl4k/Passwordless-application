@@ -1,10 +1,10 @@
 package com.app.demo.config;
 
-import com.app.demo.dto.custom.CustomUserDetails;
+import com.app.demo.dto.common.CustomUserDetails;
 import com.app.demo.enums.AuthProvider;
-import com.app.demo.security.OtpAuthenticationFilter;
-import com.app.demo.security.OtpAuthenticationProvider;
-import com.app.demo.security.OtpFailureHandler;
+import com.app.demo.auth.OtpAuthenticationFilter;
+import com.app.demo.auth.OtpAuthenticationProvider;
+import com.app.demo.auth.OtpFailureHandler;
 import com.app.demo.service.CustomUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +41,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/login",
+                                "/one-click-login",
+                                "/auth/**",
                                 "/signup",
                                 "/otp-login",
                                 "/otp-login-process",

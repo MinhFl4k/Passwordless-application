@@ -34,12 +34,12 @@
     <form th:action="@{/login}" method="post">
         <div class="form-group">
             <label class="control-label" for="username"> Email</label>
-            <input type="email" id="username" name="username" placeholder="Enter your email"  class="form-control" required>
+            <input type="email" id="username" name="username" placeholder="Enter your email"  class="form-control">
         </div>
 
         <div class="form-group">
             <label class="control-label" for="password"> Password </label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" class="form-control" required/>
+            <input type="password" id="password" name="password" placeholder="Enter your password" class="form-control"/>
         </div>
 
         <div class="form-group">
@@ -66,6 +66,7 @@
         </a>
 
         <a href="/" th:href="@{/otp-login}" class="btn btn-danger">Login with OTP</a>
+        <a href="/" th:href="@{/one-click-login}" class="btn btn-success">Login instantly with email</a>
     </div>
     <hr>
 </div>

@@ -1,8 +1,9 @@
-package com.app.demo.dto.custom;
+package com.app.demo.dto.common;
 
 import com.app.demo.enums.AuthProvider;
 import com.app.demo.model.User;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 

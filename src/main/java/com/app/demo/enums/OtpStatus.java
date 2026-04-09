@@ -1,5 +1,8 @@
 package com.app.demo.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum OtpStatus {
     VALID("Verification successful"),
     INVALID("Invalid OTP"),
@@ -13,7 +16,4 @@ public enum OtpStatus {
         this.message = message;
     }
 
-    public String getMessage() {
-        return message;
-    }
 }

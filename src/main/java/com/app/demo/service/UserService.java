@@ -24,6 +24,8 @@ public interface UserService {
             Authentication authentication
     );
 
+    User findByEmail(String email);
+
     void updateUserInfo(
             Authentication authentication,
             UserUpdateDto userDto

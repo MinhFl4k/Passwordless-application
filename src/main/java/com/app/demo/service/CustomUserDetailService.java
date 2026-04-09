@@ -1,6 +1,6 @@
 package com.app.demo.service;
 
-import com.app.demo.dto.custom.CustomUserDetails;
+import com.app.demo.dto.common.CustomUserDetails;
 import com.app.demo.model.User;
 import com.app.demo.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;

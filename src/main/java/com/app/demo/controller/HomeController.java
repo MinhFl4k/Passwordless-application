@@ -1,14 +1,15 @@
 package com.app.demo.controller;
 
+import com.app.demo.dto.request.EmailRequestDTO;
 import com.app.demo.dto.request.UserSignupDto;
 import com.app.demo.dto.request.UserUpdateDto;
 import com.app.demo.dto.request.ChangePasswordDTO;
 import com.app.demo.dto.response.UserResponseDto;
-import com.app.demo.service.EmailService;
-import com.app.demo.service.OtpService;
-import com.app.demo.service.UserService;
+import com.app.demo.service.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -18,21 +19,28 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 
 @Controller
 public class HomeController {
 
-    private final UserService userService;
-    private final EmailService emailService;
-    private final OtpService otpService;
+    @Autowired
+    private UserService userService;
 
-    public HomeController(UserService userService, EmailService emailService, OtpService otpService) {
-        this.userService = userService;
-        this.emailService = emailService;
-        this.otpService = otpService;
-    }
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private OtpService otpService;
+
+    @Autowired
+    private OneTimeLinkService oneTimeLinkService;
+
+    @Autowired
+    private JwtService jwtService;
+
 
     @GetMapping("/login")
     public String showLoginPage(Authentication authentication) {
@@ -41,6 +49,55 @@ public class HomeController {
             return "redirect:/home";
         }
         return "login";
+    }
+
+    @GetMapping("/one-click-login")
+    public String showOneTimeLoginPage(
+            Authentication authentication,
+            Model model
+    ) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/home";
+        }
+        model.addAttribute("emailRequest", new EmailRequestDTO());
+        return "one-click-login";
+    }
+
+    @PostMapping("/auth/send-link-login")
+    public String sendLink(
+            @Valid @ModelAttribute("emailRequest") EmailRequestDTO emailRequestDTO,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "one-click-login";
+        }
+
+        String email = emailRequestDTO.getEmail();
+
+        try {
+            oneTimeLinkService.sendOneTimeLink(email);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Please check your email inbox");
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+        }
+        return "redirect:/one-click-login";
+    }
+
+    @GetMapping("/auth/one-link-login")
+    public String loginByOneTimeLink(
+            @RequestParam String token,
+            HttpServletRequest request
+    ) {
+        try {
+            oneTimeLinkService.loginByOneTimeLink(token, request);
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            return "error";
+        }
+        return "redirect:/home";
     }
 
     @GetMapping("/otp-login")
@@ -56,14 +113,22 @@ public class HomeController {
             model.addAttribute("error", error);
             session.removeAttribute("FLASH_ERROR");
         }
+        model.addAttribute("emailRequest", new EmailRequestDTO());
         model.addAttribute("email", session.getAttribute("email"));
 
         return "otp-login";
     }
 
     @PostMapping("/send-otp")
-    public String sendOtp(@RequestParam("username") String email,
-                          HttpSession session) {
+    public String sendOtp(
+            @Valid @ModelAttribute("emailRequest") EmailRequestDTO emailRequestDTO,
+            BindingResult bindingResult,
+            HttpSession session
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "otp-login";
+        }
+        String email = emailRequestDTO.getEmail();
         try {
             String otp = otpService.generateOtp(email);
             emailService.sendOtp(email, otp);

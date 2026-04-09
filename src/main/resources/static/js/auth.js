@@ -1,12 +1,28 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const sendBtn = document.getElementById("sendOtpBtn");
+    const sendBtn = document.getElementById("sendCodeBtn");
+
+    const sendForm = document.querySelector(
+        "form[action*='send-otp'], form[action*='send-link-login']"
+    );
+
     const otpForm = document.querySelector("form[action*='otp-login-process']");
-    const sendForm = document.querySelector("form[action*='send-otp']");
     const otpInput = document.querySelector("input[name='otp']");
 
     const COOLDOWN_TIME = 60;
-    const STORAGE_KEY = "otpCooldownStart";
+    const STORAGE_KEY = "authCooldownStart";
+
+    function preventDoubleSubmit(form) {
+        if (!form) return;
+
+        form.addEventListener("submit", function (e) {
+            if (form.classList.contains("submitted")) {
+                e.preventDefault();
+                return;
+            }
+            form.classList.add("submitted");
+        });
+    }
 
     function startCooldown(seconds) {
         if (!sendBtn) return;
@@ -21,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (timeLeft < 0) {
                 clearInterval(interval);
                 sendBtn.disabled = false;
-                sendBtn.innerText = "Send OTP";
+                sendBtn.innerText = "Send";
                 localStorage.removeItem(STORAGE_KEY);
             }
         }, 1000);
@@ -44,22 +60,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (sendBtn && sendForm) {
         sendForm.addEventListener("submit", function () {
             localStorage.setItem(STORAGE_KEY, Date.now());
-
             sendBtn.disabled = true;
             sendBtn.innerText = "Sending...";
         });
     }
 
-
-    if (otpForm) {
-        otpForm.addEventListener("submit", function (e) {
-            if (otpForm.classList.contains("submitted")) {
-                e.preventDefault();
-                return;
-            }
-            otpForm.classList.add("submitted");
-        });
-    }
+    preventDoubleSubmit(sendForm);
+    preventDoubleSubmit(otpForm);
 
     if (otpInput) {
         otpInput.addEventListener("input", function () {

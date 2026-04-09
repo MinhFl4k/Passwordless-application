@@ -25,37 +25,22 @@
 <br><br><br><br><br><br><br>
 
 <div class="container">
-    <h1>Login using code</h1>
+    <h1>Login instantly with email</h1>
 
-    <form th:action="@{/send-otp}" th:object="${emailRequest}" method="post">
+    <form th:action="@{/auth/send-link-login}" th:object="${emailRequest}" method="post">
         <div class="form-group">
             <label>Email</label>
-            <input type="text" name="email" class="form-control">
-            <div th:if="${#fields.hasErrors('email')}" class="text-danger">
-                <span th:errors="*{email}"></span>
-            </div>
+            <input type="text" th:field="*{email}" class="form-control">
         </div>
-        <button type="submit" class="btn btn-primary" id="sendCodeBtn">Send OTP</button>
-    </form>
-
-    <hr>
-
-    <form th:action="@{/otp-login-process}" method="post">
-
-        <input type="hidden" name="username" th:value="${email}" />
-
-        <div class="form-group">
-            <label>OTP</label>
-            <input type="number" name="otp" class="form-control">
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span th:text="${successMessage}"></span>
         </div>
-        <div th:if="${error}" class="alert alert-danger">
-            <span th:text="${error}"></span>
+        <div th:if="${#fields.hasErrors('email')}" class="text-danger">
+            <span th:errors="*{email}"></span>
         </div>
-
-        <button type="submit" class="btn btn-success">Login</button>
+        <button type="submit" class="btn btn-primary" id="sendCodeBtn">Send link to email</button>
         <a href="/" th:href="@{/login}" class="btn btn-danger">Back</a>
     </form>
-
     <hr>
 </div>
 </body>

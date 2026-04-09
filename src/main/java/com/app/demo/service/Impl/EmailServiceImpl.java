@@ -14,12 +14,25 @@ public class EmailServiceImpl implements EmailService {
         this.mailSender = mailSender;
     }
 
-    public void sendOtp(String to, String otp) {
+    @Override
+    public void sendOtp(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Your OTP Code");
-        message.setText("Your OTP is: " + otp);
+        message.setTo(toEmail);
+        message.setSubject("Your login code");
+        message.setText("Your login is: " + otp);
 
         mailSender.send(message);
     }
+
+    @Override
+    public void sendOneTimeLink(String toEmail, String link) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Your login link");
+        message.setText("Click this link to login:\n" + link);
+
+        mailSender.send(message);
+    }
+
+
 }

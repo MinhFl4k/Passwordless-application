@@ -1,4 +1,4 @@
-package com.app.demo.security;
+package com.app.demo.auth;
 
 import com.app.demo.dto.response.OtpResponseDto;
 import com.app.demo.service.OtpService;

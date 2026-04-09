@@ -5,6 +5,9 @@ import com.app.demo.enums.OtpStatus;
 import com.app.demo.model.OtpToken;
 import com.app.demo.repository.OtpTokenRepository;
 import com.app.demo.service.OtpService;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,28 +18,29 @@ import java.util.Random;
 @Service
 public class OtpServiceImpl implements OtpService {
 
-    private final OtpTokenRepository otpTokenRepository;
+    @Autowired
+    private OtpTokenRepository otpTokenRepository;
 
-    private static final int OTP_RESEND_INTERVAL_SECONDS = 60;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    private final PasswordEncoder passwordEncoder;
+    @Value("${token.expiration}")
+    private long expiration;
 
-    public OtpServiceImpl(OtpTokenRepository otpTokenRepository, PasswordEncoder passwordEncoder) {
-        this.otpTokenRepository = otpTokenRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
+    @Transactional
     public String generateOtp(String email) {
-        Optional<OtpToken> lastCreatedToken = otpTokenRepository.findTopByEmailOrderByExpiryTimeDesc(email);
+        Optional<OtpToken> lastCreatedOtp = otpTokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
 
-        if (lastCreatedToken.isPresent()) {
-            OtpToken lastOtp = lastCreatedToken.get();
+        if (lastCreatedOtp.isPresent()) {
+            OtpToken lastOtp = lastCreatedOtp.get();
             LocalDateTime allowedTime = lastOtp.getCreatedAt()
-                    .plusSeconds(OTP_RESEND_INTERVAL_SECONDS);
+                    .plusSeconds(expiration);
             if (LocalDateTime.now().isBefore(allowedTime)) {
-                throw new RuntimeException("Please wait " + OTP_RESEND_INTERVAL_SECONDS + " seconds before sending the OTP again");
+                throw new RuntimeException("Please wait " + expiration + " seconds before sending the OTP again");
             }
         }
+
+        otpTokenRepository.expireAllOldOtp(email);
 
         String otp = String.valueOf(new Random().nextInt(900000) + 100000);
 
@@ -54,17 +58,21 @@ public class OtpServiceImpl implements OtpService {
 
     public OtpResponseDto validateOtp(String email, String otp) {
         Optional<OtpToken> tokenOpt =
-                otpTokenRepository.findTopByEmailOrderByExpiryTimeDesc(email);
+                otpTokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
+
+        if (otp == null || !otp.matches("\\d{6}")) {
+            return new OtpResponseDto(OtpStatus.INVALID);
+        }
 
         if (tokenOpt.isEmpty())
-            return new OtpResponseDto(OtpStatus.NOT_FOUND);;
+            return new OtpResponseDto(OtpStatus.NOT_FOUND);
 
         OtpToken token = tokenOpt.get();
 
         if (token.isUsed())
             return new OtpResponseDto(OtpStatus.USED);
         if (token.getExpiryTime().isBefore(LocalDateTime.now()))
-            return new OtpResponseDto(OtpStatus.EXPIRED);;
+            return new OtpResponseDto(OtpStatus.EXPIRED);
 
         boolean otpMatch = passwordEncoder.matches(otp, token.getOtp());
         if (!otpMatch)
