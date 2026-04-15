@@ -169,30 +169,4 @@ public class UserServiceImpl implements UserService {
 
         return passwordEncoder.matches(oldPassword, user.getPassword());
     }
-
-    @Override
-    public void onOtpFailure(User user) {
-        int failed = user.getOtpFailedAttempts() == null ? 0 : user.getOtpFailedAttempts();
-        failed++;
-        user.setOtpFailedAttempts(failed);
-
-        if (failed >= 5) {
-            user.setLockedUntil(LocalDateTime.now().plusMinutes(15));
-        }
-
-        userRepository.save(user);
-    }
-
-    @Override
-    public void onOtpSuccess(User user) {
-        user.setOtpFailedAttempts(0);
-        user.setLockedUntil(null);
-        userRepository.save(user);
-    }
-
-    @Override
-    public boolean isLocked(User user) {
-        return user.getLockedUntil() != null
-                && user.getLockedUntil().isAfter(LocalDateTime.now());
-    }
 }

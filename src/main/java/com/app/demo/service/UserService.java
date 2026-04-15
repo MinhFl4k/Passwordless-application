@@ -40,10 +40,4 @@ public interface UserService {
             String email,
             String oldPassword
     );
-
-    void onOtpFailure(User user);
-
-    void onOtpSuccess(User user);
-
-    boolean isLocked(User user);
 }
