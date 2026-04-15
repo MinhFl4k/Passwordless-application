@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "User")
 @Data
@@ -27,4 +29,12 @@ public class User {
     AuthProvider provider;
 
     String providerId;
+
+    @Column(nullable = false)
+    Integer passwordFailedAttempts = 0;
+
+    @Column(nullable = false)
+    Integer otpFailedAttempts = 0;
+
+    LocalDateTime lockedUntil;
 }

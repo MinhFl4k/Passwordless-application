@@ -7,21 +7,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
 
-    private String email;
-    private String password;
-
+    private final String email;
+    private final String password;
     @Getter
-    private AuthProvider provider;
+    private final AuthProvider provider;
+    private final LocalDateTime lockedUntil;
 
     public CustomUserDetails(User user) {
         this.email = user.getEmail();
         this.password = user.getPassword();
         this.provider = user.getProvider();
+        this.lockedUntil = user.getLockedUntil();
     }
 
 
@@ -47,7 +49,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return lockedUntil == null
+                || lockedUntil.isBefore(LocalDateTime.now());
     }
 
     @Override

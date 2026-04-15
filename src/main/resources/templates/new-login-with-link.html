@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Magic Link Sent</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container" style="margin-top: 100px; max-width: 500px;">
+    <h1>Magic Link Login</h1>
+
+    <p>Please check your email inbox.</p>
+    <p th:if="${email != null}">
+        Email: <strong th:text="${email}"></strong>
+    </p>
+</div>
+</body>
+</html>

@@ -19,7 +19,7 @@ public class EmailServiceImpl implements EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setSubject("Your login code");
-        message.setText("Your login is: " + otp);
+        message.setText("Your login code is: " + otp);
 
         mailSender.send(message);
     }

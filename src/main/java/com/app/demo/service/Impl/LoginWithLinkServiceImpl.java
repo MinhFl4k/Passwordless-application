@@ -1,19 +1,24 @@
 package com.app.demo.service.Impl;
 
 import com.app.demo.model.OneTimeToken;
+import com.app.demo.model.User;
 import com.app.demo.repository.OneTimeTokenRepository;
+import com.app.demo.repository.UserRepository;
 import com.app.demo.service.EmailService;
 import com.app.demo.service.JwtService;
-import com.app.demo.service.OneTimeLinkService;
+import com.app.demo.service.LoginAttemptService;
+import com.app.demo.service.LoginWithLinkService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
@@ -22,7 +27,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
-public class OneTimeLinkServiceImpl implements OneTimeLinkService {
+public class LoginWithLinkServiceImpl implements LoginWithLinkService {
 
     @Autowired
     private JwtService jwtService;
@@ -34,13 +39,22 @@ public class OneTimeLinkServiceImpl implements OneTimeLinkService {
     private UserDetailsService userDetailsService;
 
     @Autowired
+    private LoginAttemptService loginAttemptService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private OneTimeTokenRepository oneTimeTokenRepository;
+
+
+    private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
 
     @Value("${token.expiration}")
     private long expiration;
 
     @Transactional
-    public void sendOneTimeLink(String email) {
+    public void sendLink(String email) {
 
         Optional<OneTimeToken> lastCreatedToken = oneTimeTokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
 
@@ -57,7 +71,7 @@ public class OneTimeLinkServiceImpl implements OneTimeLinkService {
 
         String token = jwtService.generateToken(email);
 
-        String link = "http://localhost:8080/auth/one-link-login?token=" + token;
+        String link = "http://localhost:8080/auth/link-login-process?token=" + token;
 
         OneTimeToken oneTimeToken = new OneTimeToken();
         oneTimeToken.setEmail(email);
@@ -72,12 +86,10 @@ public class OneTimeLinkServiceImpl implements OneTimeLinkService {
     }
 
     @Override
-    public void loginByOneTimeLink(String token, HttpServletRequest request) {
+    public void loginWithLink(String token, HttpServletRequest request) {
         if (token == null || !jwtService.isValid(token)) {
             throw new RuntimeException("Invalid token");
         }
-
-        String email = jwtService.extractEmail(token);
 
         OneTimeToken oneTimeToken = oneTimeTokenRepository
                 .findByToken(token)
@@ -86,10 +98,19 @@ public class OneTimeLinkServiceImpl implements OneTimeLinkService {
 
         validateOneTimeToken(oneTimeToken);
 
+        String email = jwtService.extractEmail(token);
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+        userDetailsChecker.check(userDetails);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         oneTimeToken.setUsed(true);
         oneTimeTokenRepository.save(oneTimeToken);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        loginAttemptService.onLoginSuccess(user);
 
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 userDetails,

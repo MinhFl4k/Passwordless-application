@@ -2,7 +2,7 @@ package com.app.demo.service;
 
 import com.app.demo.dto.response.OtpResponseDto;
 
-public interface OtpService {
+public interface LoginWithOtpService {
 
     String generateOtp(String email);
 

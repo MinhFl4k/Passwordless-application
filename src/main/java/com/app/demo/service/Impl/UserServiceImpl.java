@@ -16,6 +16,8 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -166,5 +168,31 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return passwordEncoder.matches(oldPassword, user.getPassword());
+    }
+
+    @Override
+    public void onOtpFailure(User user) {
+        int failed = user.getOtpFailedAttempts() == null ? 0 : user.getOtpFailedAttempts();
+        failed++;
+        user.setOtpFailedAttempts(failed);
+
+        if (failed >= 5) {
+            user.setLockedUntil(LocalDateTime.now().plusMinutes(15));
+        }
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public void onOtpSuccess(User user) {
+        user.setOtpFailedAttempts(0);
+        user.setLockedUntil(null);
+        userRepository.save(user);
+    }
+
+    @Override
+    public boolean isLocked(User user) {
+        return user.getLockedUntil() != null
+                && user.getLockedUntil().isAfter(LocalDateTime.now());
     }
 }

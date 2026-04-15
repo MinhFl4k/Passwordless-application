@@ -1,10 +1,12 @@
 package com.app.demo.config;
 
+import com.app.demo.auth.passwords.PasswordFailureHandler;
+import com.app.demo.auth.passwords.PasswordSuccessHandler;
 import com.app.demo.dto.common.CustomUserDetails;
 import com.app.demo.enums.AuthProvider;
-import com.app.demo.auth.OtpAuthenticationFilter;
-import com.app.demo.auth.OtpAuthenticationProvider;
-import com.app.demo.auth.OtpFailureHandler;
+import com.app.demo.auth.otp.OtpAuthenticationFilter;
+import com.app.demo.auth.otp.OtpAuthenticationProvider;
+import com.app.demo.auth.otp.OtpFailureHandler;
 import com.app.demo.service.CustomUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -28,25 +30,35 @@ public class SecurityConfig {
     @Autowired
     private OtpFailureHandler otpFailureHandler;
 
+    @Autowired
+    private PasswordFailureHandler passwordFailureHandler;
+
+    @Autowired
+    private PasswordSuccessHandler passwordSuccessHandler;
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
 
         OtpAuthenticationFilter otpFilter = new OtpAuthenticationFilter();
         otpFilter.setAuthenticationManager(authenticationManager);
         otpFilter.setFilterProcessesUrl("/otp-login-process");
-
         otpFilter.setAuthenticationFailureHandler(otpFailureHandler);
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
+                                "/new-login",
+                                "/new-login-with-otp",
+                                "/new-login-with-link",
                                 "/login",
-                                "/one-click-login",
+                                "/login-with-link",
+                                "/login-with-otp",
                                 "/auth/**",
                                 "/signup",
-                                "/otp-login",
                                 "/otp-login-process",
                                 "/send-otp",
+                                "/account-locked",
                                 "/css/**",
                                 "/js/**"
                         ).permitAll()
@@ -68,8 +80,8 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/home", true)
-                        .failureUrl("/login?error=true")
+                        .successHandler(passwordSuccessHandler)
+                        .failureHandler(passwordFailureHandler)
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2

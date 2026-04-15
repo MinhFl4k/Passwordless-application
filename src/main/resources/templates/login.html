@@ -27,7 +27,11 @@
 <div class="container">
     <h1>Login</h1>
 
-    <div th:if="${param.error}" class="alert alert-info">
+    <div th:if="${error}" class="alert alert-danger">
+        <span th:text="${error}"></span>
+    </div>
+
+    <div th:if="${param.error != null and error == null}" class="alert alert-info">
         Invalid email or password. Please try again.
     </div>
 
@@ -52,6 +56,12 @@
 
     <hr>
 
+    <div style="display: flex;">
+        <a href="/" th:href="@{/new-login}" class="btn btn-success">New login</a>
+    </div>
+
+    <hr>
+
     <div style="display: flex; gap: 10px;">
         <a th:href="@{/oauth2/authorization/google}" class="btn btn-danger">
             <i class="fa fa-google"></i> Login with Google
@@ -65,8 +75,8 @@
             <i class="fa fa-facebook"></i> Login with Facebook
         </a>
 
-        <a href="/" th:href="@{/otp-login}" class="btn btn-danger">Login with OTP</a>
-        <a href="/" th:href="@{/one-click-login}" class="btn btn-success">Login instantly with email</a>
+        <a href="/" th:href="@{/login-with-otp}" class="btn btn-danger">Login with OTP</a>
+        <a href="/" th:href="@{/login-with-link}" class="btn btn-success">Login instantly with email</a>
     </div>
     <hr>
 </div>

@@ -1,4 +1,4 @@
-package com.app.demo.auth;
+package com.app.demo.auth.otp;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import java.io.IOException;
 
@@ -49,8 +50,9 @@ public class OtpAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         context.setAuthentication(authResult);
         SecurityContextHolder.setContext(context);
 
-        HttpSession session = request.getSession(true);
-        session.setAttribute("SPRING_SECURITY_CONTEXT", context);
+        HttpSessionSecurityContextRepository securityContextRepository =
+                new HttpSessionSecurityContextRepository();
+        securityContextRepository.saveContext(context, request, response);
 
         response.sendRedirect("/home");
     }

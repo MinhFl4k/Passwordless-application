@@ -3,10 +3,10 @@ package com.app.demo.service;
 import com.app.demo.model.OneTimeToken;
 import jakarta.servlet.http.HttpServletRequest;
 
-public interface OneTimeLinkService {
-    void sendOneTimeLink(String email);
+public interface LoginWithLinkService {
+    void sendLink(String email);
 
-    void loginByOneTimeLink(String token, HttpServletRequest request);
+    void loginWithLink(String token, HttpServletRequest request);
 
     void validateOneTimeToken(OneTimeToken token);
 }

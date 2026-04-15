@@ -1,4 +1,4 @@
-package com.app.demo.auth;
+package com.app.demo.auth.otp;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,7 +9,7 @@ import java.util.Collections;
 public class OtpAuthenticationToken extends AbstractAuthenticationToken {
 
     private final Object principal;
-    private final Object credentials;
+    private Object credentials;
 
     public OtpAuthenticationToken(Object principal, Object credentials) {
         super(Collections.emptyList());
@@ -35,5 +35,11 @@ public class OtpAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public Object getPrincipal() {
         return principal;
+    }
+
+    @Override
+    public void eraseCredentials() {
+        super.eraseCredentials();
+        this.credentials = null;
     }
 }

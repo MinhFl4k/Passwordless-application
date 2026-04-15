@@ -4,7 +4,7 @@ import com.app.demo.dto.response.OtpResponseDto;
 import com.app.demo.enums.OtpStatus;
 import com.app.demo.model.OtpToken;
 import com.app.demo.repository.OtpTokenRepository;
-import com.app.demo.service.OtpService;
+import com.app.demo.service.LoginWithOtpService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Random;
 
 @Service
-public class OtpServiceImpl implements OtpService {
+public class LoginWithOtpServiceImpl implements LoginWithOtpService {
 
     @Autowired
     private OtpTokenRepository otpTokenRepository;
@@ -36,7 +36,7 @@ public class OtpServiceImpl implements OtpService {
             LocalDateTime allowedTime = lastOtp.getCreatedAt()
                     .plusSeconds(expiration);
             if (LocalDateTime.now().isBefore(allowedTime)) {
-                throw new RuntimeException("Please wait " + expiration + " seconds before sending the OTP again");
+                throw new RuntimeException("Please wait " + expiration + " seconds then try again");
             }
         }
 
