@@ -1,10 +1,13 @@
 package com.app.demo.auth.otp;
 
+import com.app.demo.dto.common.CustomUserDetails;
 import com.app.demo.dto.response.OtpResponseDto;
+import com.app.demo.enums.ErrorMessage;
 import com.app.demo.model.User;
 import com.app.demo.repository.UserRepository;
 import com.app.demo.service.LoginAttemptService;
-import com.app.demo.service.LoginWithOtpService;
+import com.app.demo.service.OtpLoginService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -18,31 +21,16 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class OtpAuthenticationProvider implements AuthenticationProvider {
+@RequiredArgsConstructor
+public class OtpAuthProvider implements AuthenticationProvider {
 
-    private final LoginWithOtpService loginWithOtpService;
+    private final OtpLoginService loginWithOtpService;
 
     private final UserDetailsService userDetailsService;
-
-    private final UserRepository userRepository;
 
     private final LoginAttemptService loginAttemptService;
 
     private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
-
-    @Value("${account.locked.error.message}")
-    private String ACCOUNT_LOCKED_ERROR_MESSAGE;
-
-    public OtpAuthenticationProvider(
-            LoginWithOtpService loginWithOtpService,
-            UserDetailsService userDetailsService,
-            UserRepository userRepository,
-            LoginAttemptService loginAttemptService) {
-        this.loginWithOtpService = loginWithOtpService;
-        this.userDetailsService = userDetailsService;
-        this.userRepository = userRepository;
-        this.loginAttemptService = loginAttemptService;
-    }
 
     @Override
     public Authentication authenticate(Authentication authentication) {
@@ -50,12 +38,10 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
         String email = authentication.getName();
         String otp = authentication.getCredentials().toString();
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
+        CustomUserDetails userDetails =
+                (CustomUserDetails) userDetailsService.loadUserByUsername(email);
         userDetailsChecker.check(userDetails);
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("USER_NOT_FOUND"));
+        User user = userDetails.getUser();
 
         OtpResponseDto result = loginWithOtpService.validateOtp(email, otp);
 
@@ -63,16 +49,14 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
             loginAttemptService.onOtpFailure(user);
 
             if (loginAttemptService.isLocked(user)) {
-                throw new LockedException(ACCOUNT_LOCKED_ERROR_MESSAGE);
+                throw new LockedException(ErrorMessage.ACCOUNT_LOCKED.getMessage());
             }
-
             throw new BadCredentialsException(result.getMessage());
         }
-
         loginAttemptService.onLoginSuccess(user);
 
-        OtpAuthenticationToken authenticatedToken =
-                new OtpAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        OtpAuthToken authenticatedToken =
+                new OtpAuthToken(userDetails, null, userDetails.getAuthorities());
         authenticatedToken.eraseCredentials();
 
         return authenticatedToken;
@@ -80,6 +64,6 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return OtpAuthenticationToken.class.isAssignableFrom(authentication);
+        return OtpAuthToken.class.isAssignableFrom(authentication);
     }
 }

@@ -4,15 +4,15 @@ import com.app.demo.dto.request.UserUpdateDto;
 import com.app.demo.repository.UserRepository;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UniqueEmailForUpdateValidator
         implements ConstraintValidator<UniqueEmailForUpdate, UserUpdateDto> {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public boolean isValid(UserUpdateDto dto, ConstraintValidatorContext context) {

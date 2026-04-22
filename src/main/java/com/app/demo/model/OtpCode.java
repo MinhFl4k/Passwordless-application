@@ -10,18 +10,18 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "OneTimeToken")
+@Table(name = "OtpCode")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OneTimeToken {
+public class OtpCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     String email;
-    String token;
+    String otp;
     LocalDateTime expiryTime;
     LocalDateTime createdAt;
     boolean used;

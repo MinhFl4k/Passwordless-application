@@ -1,5 +1,6 @@
 package com.app.demo.auth.passwords;
 
+import com.app.demo.enums.ErrorMessage;
 import com.app.demo.model.User;
 import com.app.demo.repository.UserRepository;
 import com.app.demo.service.LoginAttemptService;
@@ -7,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
@@ -22,9 +22,6 @@ public class PasswordFailureHandler implements AuthenticationFailureHandler {
 
     private final UserRepository userRepository;
     private final LoginAttemptService loginAttemptService;
-
-    @Value("${account.locked.error.message}")
-    private String ACCOUNT_LOCKED_ERROR_MESSAGE;
 
     public PasswordFailureHandler(UserRepository userRepository,
                                   LoginAttemptService loginAttemptService) {
@@ -42,8 +39,7 @@ public class PasswordFailureHandler implements AuthenticationFailureHandler {
         String email = request.getParameter("username");
 
         if (exception instanceof LockedException) {
-            session.setAttribute("FLASH_ERROR",
-                    ACCOUNT_LOCKED_ERROR_MESSAGE);
+            session.setAttribute("FLASH_ERROR", ErrorMessage.ACCOUNT_LOCKED.getMessage());
             response.sendRedirect("/login");
             return;
         }
@@ -56,8 +52,7 @@ public class PasswordFailureHandler implements AuthenticationFailureHandler {
                 loginAttemptService.onPasswordFailure(user);
 
                 if (loginAttemptService.isLocked(user)) {
-                    session.setAttribute("FLASH_ERROR",
-                            ACCOUNT_LOCKED_ERROR_MESSAGE);
+                    session.setAttribute("FLASH_ERROR", ErrorMessage.ACCOUNT_LOCKED.getMessage());
                     response.sendRedirect("/login");
                     return;
                 }

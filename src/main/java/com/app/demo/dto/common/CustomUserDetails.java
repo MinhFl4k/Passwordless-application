@@ -3,7 +3,6 @@ package com.app.demo.dto.common;
 import com.app.demo.enums.AuthProvider;
 import com.app.demo.model.User;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,19 +12,12 @@ import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
 
-    private final String email;
-    private final String password;
     @Getter
-    private final AuthProvider provider;
-    private final LocalDateTime lockedUntil;
+    private final User user;
 
     public CustomUserDetails(User user) {
-        this.email = user.getEmail();
-        this.password = user.getPassword();
-        this.provider = user.getProvider();
-        this.lockedUntil = user.getLockedUntil();
+        this.user = user;
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -34,12 +26,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return user.getEmail();
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return user.getPassword();
     }
 
     @Override
@@ -49,8 +41,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return lockedUntil == null
-                || lockedUntil.isBefore(LocalDateTime.now());
+        return user.getLockedUntil() == null
+                || user.getLockedUntil().isBefore(LocalDateTime.now());
     }
 
     @Override
@@ -61,5 +53,9 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public AuthProvider getProvider() {
+        return user.getProvider();
     }
 }

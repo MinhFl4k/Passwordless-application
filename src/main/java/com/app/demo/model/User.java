@@ -24,6 +24,7 @@ public class User {
     String email;
     String phone;
     String password;
+    String secret;
 
     @Enumerated(EnumType.STRING)
     AuthProvider provider;

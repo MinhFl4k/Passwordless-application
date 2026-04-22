@@ -25,23 +25,14 @@
 <br><br><br><br><br><br><br>
 
 <div class="container">
-    <h1>Login using code</h1>
+    <h1>Login using Google authenticator</h1>
 
-    <form th:action="@{/send-otp}" th:object="${emailRequest}" method="post">
+    <form th:action="@{/totp-login-process}" method="post">
+
         <div class="form-group">
             <label>Email</label>
             <input type="text" name="email" class="form-control">
-            <div th:if="${#fields.hasErrors('email')}" class="text-danger">
-                <span th:errors="*{email}"></span>
-            </div>
         </div>
-        <button type="submit" class="btn btn-primary" id="sendCodeBtn">Send OTP</button>
-    </form>
-
-    <hr>
-
-    <form th:action="@{/otp-login-process}" method="post">
-
         <div class="form-group">
             <label>OTP code</label>
             <input type="number" name="otp" class="form-control">

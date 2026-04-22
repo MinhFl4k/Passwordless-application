@@ -1,12 +1,11 @@
 package com.app.demo.controller;
 
-import com.app.demo.dto.request.ChangePasswordDTO;
+import com.app.demo.dto.request.ChangePasswordDto;
 import com.app.demo.dto.request.UserUpdateDto;
 import com.app.demo.dto.response.UserResponseDto;
-import com.app.demo.service.JwtService;
 import com.app.demo.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,13 +17,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.security.Principal;
 
 @Controller
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/home")
     public String home(Authentication authentication, Model model) {
@@ -58,7 +54,7 @@ public class UserController {
         try {
             userService.updateUserInfo(authentication, userDto);
         } catch (RuntimeException e) {
-            System.err.println("Update profile failed: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
 
         return "redirect:/home";
@@ -66,13 +62,13 @@ public class UserController {
 
     @GetMapping("/change-password")
     public String showChangePasswordPage(Model model) {
-        model.addAttribute("passwordDto", new ChangePasswordDTO());
+        model.addAttribute("passwordDto", new ChangePasswordDto());
         return "change-password";
     }
 
     @PostMapping("/change-password")
     public String changePassword(
-            @Valid @ModelAttribute("passwordDto") ChangePasswordDTO changePasswordDTO,
+            @Valid @ModelAttribute("passwordDto") ChangePasswordDto changePasswordDTO,
             BindingResult result,
             Principal principal
     ) {
@@ -84,7 +80,7 @@ public class UserController {
         try {
             userService.changePassword(email, changePasswordDTO);
         } catch (RuntimeException e) {
-            System.err.println("Change password failed: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
 
         return "redirect:/home";

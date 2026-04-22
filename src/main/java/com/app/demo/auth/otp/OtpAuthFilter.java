@@ -1,5 +1,7 @@
 package com.app.demo.auth.otp;
 
+import com.app.demo.enums.ErrorMessage;
+import com.app.demo.enums.OtpStatus;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,28 +15,33 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 
 import java.io.IOException;
 
-public class OtpAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class OtpAuthFilter extends UsernamePasswordAuthenticationFilter {
+
+    private static final String POST = "POST";
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) {
 
-        if (!request.getMethod().equals("POST")) {
+        if (!request.getMethod().equals(POST)) {
             throw new AuthenticationServiceException(
                     "Authentication method not supported: " + request.getMethod());
         }
 
-        String email = request.getParameter("username");
         String otp = request.getParameter("otp");
+        String email = request.getSession().getAttribute("OTP_LOGIN_EMAIL").toString();
 
         email = (email != null) ? email.trim() : "";
         otp = (otp != null) ? otp.trim() : "";
 
-        if (email.isEmpty() || otp.isEmpty()) {
-            throw new AuthenticationServiceException("Email or OTP must not be empty");
+        if (email.isEmpty()) {
+            throw new AuthenticationServiceException(ErrorMessage.USER_NOT_FOUND.getMessage());
+        } else if (otp.isEmpty()) {
+            throw new AuthenticationServiceException(OtpStatus.NOT_FOUND.getMessage());
         }
 
-        OtpAuthenticationToken authRequest =
-                new OtpAuthenticationToken(email, otp);
+        OtpAuthToken authRequest =
+                new OtpAuthToken(email, otp);
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }
@@ -53,6 +60,12 @@ public class OtpAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         HttpSessionSecurityContextRepository securityContextRepository =
                 new HttpSessionSecurityContextRepository();
         securityContextRepository.saveContext(context, request, response);
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute("OTP_LOGIN_EMAIL");
+            session.removeAttribute("OTP_LOGIN_FLOW");
+        }
 
         response.sendRedirect("/home");
     }

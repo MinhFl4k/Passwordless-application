@@ -13,8 +13,6 @@
 
     <form th:action="@{/otp-login-process}" method="post">
 
-        <input type="hidden" name="username" th:value="${email}" />
-
         <div class="form-group">
             <label>OTP</label>
             <input type="number" name="otp" class="form-control">

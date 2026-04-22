@@ -1,6 +1,6 @@
 package com.app.demo.service;
 
-import com.app.demo.dto.request.ChangePasswordDTO;
+import com.app.demo.dto.request.ChangePasswordDto;
 import com.app.demo.dto.request.UserSignupDto;
 import com.app.demo.dto.request.UserUpdateDto;
 import com.app.demo.dto.response.UserResponseDto;
@@ -8,6 +8,9 @@ import com.app.demo.model.User;
 import org.springframework.security.core.Authentication;
 
 public interface UserService {
+
+    void refreshAuthentication(User savedUser, Authentication authentication);
+
     void signupUser(
             UserSignupDto userSignupDto
     ) throws IllegalArgumentException;
@@ -24,8 +27,6 @@ public interface UserService {
             Authentication authentication
     );
 
-    User findByEmail(String email);
-
     void updateUserInfo(
             Authentication authentication,
             UserUpdateDto userDto
@@ -33,7 +34,7 @@ public interface UserService {
 
     void changePassword(
             String email,
-            ChangePasswordDTO changePasswordDTO
+            ChangePasswordDto changePasswordDTO
     );
 
     boolean checkOldPassword(

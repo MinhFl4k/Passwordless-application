@@ -1,9 +1,14 @@
 package com.app.demo.validation;
 
+import com.app.demo.enums.ErrorMessage;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.stereotype.Component;
 
+@Component
+@RequiredArgsConstructor
 public class PasswordMatchesValidator
         implements ConstraintValidator<PasswordMatches, Object> {
 
@@ -32,7 +37,7 @@ public class PasswordMatchesValidator
 
             if (!isValid) {
                 context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("Passwords do not match")
+                context.buildConstraintViolationWithTemplate(ErrorMessage.PASSWORD_NOT_MATCH.getMessage())
                         .addPropertyNode("confirmPassword")
                         .addConstraintViolation();
             }

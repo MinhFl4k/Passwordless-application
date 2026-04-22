@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@PasswordMatches(first = "password", second = "confirmPassword", message = "Passwords do not match")
+@PasswordMatches(first = "password", second = "confirmPassword")
 public class UserSignupDto {
 
     @NotBlank(message = "Name must not be blank")

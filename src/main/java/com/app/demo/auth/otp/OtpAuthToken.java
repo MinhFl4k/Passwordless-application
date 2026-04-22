@@ -6,21 +6,22 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 import java.util.Collections;
 
-public class OtpAuthenticationToken extends AbstractAuthenticationToken {
+public class OtpAuthToken extends AbstractAuthenticationToken {
 
     private final Object principal;
     private Object credentials;
 
-    public OtpAuthenticationToken(Object principal, Object credentials) {
+    public OtpAuthToken(Object principal, Object credentials) {
         super(Collections.emptyList());
         this.principal = principal;
         this.credentials = credentials;
         setAuthenticated(false);
     }
 
-    public OtpAuthenticationToken(Object principal,
-                                  Object credentials,
-                                  Collection<? extends GrantedAuthority> authorities) {
+    public OtpAuthToken(
+            Object principal,
+            Object credentials,
+            Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         this.principal = principal;
         this.credentials = credentials;

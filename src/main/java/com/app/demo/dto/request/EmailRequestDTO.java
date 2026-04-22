@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EmailRequestDTO {
+public class EmailRequestDto {
 
     @NotBlank(message = "Email must not be blank")
     @Email(message = "Invalid email format")

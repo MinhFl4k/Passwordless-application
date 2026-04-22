@@ -14,8 +14,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@PasswordMatches(first = "newPassword", second = "confirmPassword", message = "Passwords do not match")
-public class ChangePasswordDTO {
+@PasswordMatches(first = "newPassword", second = "confirmPassword")
+public class ChangePasswordDto {
     @NotBlank(message = "Current password must not be blank")
     @OldPassword
     String oldPassword;

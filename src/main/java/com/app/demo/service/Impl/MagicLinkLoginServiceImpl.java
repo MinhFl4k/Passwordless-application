@@ -1,17 +1,18 @@
 package com.app.demo.service.Impl;
 
-import com.app.demo.model.OneTimeToken;
+import com.app.demo.enums.ErrorMessage;
+import com.app.demo.model.LoginToken;
 import com.app.demo.model.User;
-import com.app.demo.repository.OneTimeTokenRepository;
+import com.app.demo.repository.LoginTokenRepository;
 import com.app.demo.repository.UserRepository;
 import com.app.demo.service.EmailService;
 import com.app.demo.service.JwtService;
 import com.app.demo.service.LoginAttemptService;
-import com.app.demo.service.LoginWithLinkService;
+import com.app.demo.service.MagicLinkLoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,28 +28,24 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
-public class LoginWithLinkServiceImpl implements LoginWithLinkService {
+@RequiredArgsConstructor
+public class MagicLinkLoginServiceImpl implements MagicLinkLoginService {
 
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private OneTimeTokenRepository oneTimeTokenRepository;
-
+    private final LoginTokenRepository oneTimeTokenRepository;
 
     private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
+
+    private final String MAGIC_LINK = "http://localhost:8080/auth/link-login-process?token=";
 
     @Value("${token.expiration}")
     private long expiration;
@@ -56,10 +53,10 @@ public class LoginWithLinkServiceImpl implements LoginWithLinkService {
     @Transactional
     public void sendLink(String email) {
 
-        Optional<OneTimeToken> lastCreatedToken = oneTimeTokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
+        Optional<LoginToken> lastCreatedToken = oneTimeTokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
 
         if (lastCreatedToken.isPresent()) {
-            OneTimeToken lastToken = lastCreatedToken.get();
+            LoginToken lastToken = lastCreatedToken.get();
             LocalDateTime allowedTime = lastToken.getCreatedAt()
                     .plusSeconds(expiration);
             if (LocalDateTime.now().isBefore(allowedTime)) {
@@ -71,9 +68,9 @@ public class LoginWithLinkServiceImpl implements LoginWithLinkService {
 
         String token = jwtService.generateToken(email);
 
-        String link = "http://localhost:8080/auth/link-login-process?token=" + token;
+        String link = MAGIC_LINK + token;
 
-        OneTimeToken oneTimeToken = new OneTimeToken();
+        LoginToken oneTimeToken = new LoginToken();
         oneTimeToken.setEmail(email);
         oneTimeToken.setToken(token);
         oneTimeToken.setCreatedAt(LocalDateTime.now());
@@ -91,7 +88,7 @@ public class LoginWithLinkServiceImpl implements LoginWithLinkService {
             throw new RuntimeException("Invalid token");
         }
 
-        OneTimeToken oneTimeToken = oneTimeTokenRepository
+        LoginToken oneTimeToken = oneTimeTokenRepository
                 .findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
@@ -105,7 +102,7 @@ public class LoginWithLinkServiceImpl implements LoginWithLinkService {
         userDetailsChecker.check(userDetails);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(ErrorMessage.USER_NOT_FOUND.getMessage()));
 
         oneTimeToken.setUsed(true);
         oneTimeTokenRepository.save(oneTimeToken);
@@ -130,7 +127,7 @@ public class LoginWithLinkServiceImpl implements LoginWithLinkService {
     }
 
     @Override
-    public void validateOneTimeToken(OneTimeToken token) {
+    public void validateOneTimeToken(LoginToken token) {
         if (token.isUsed() || token.getExpiryTime().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Invalid token");
         }
