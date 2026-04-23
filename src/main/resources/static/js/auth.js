@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const sendBtn = document.getElementById("sendCodeBtn");
+    const sendBtn = document.getElementById("sendAuthBtn");
 
     const sendForm = document.querySelector(
         "form[action*='send-otp'], form[action*='send-link-login']"

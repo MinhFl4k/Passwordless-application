@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OldPasswordValidator implements ConstraintValidator<OldPassword, String> {
+public class CurrentPasswordValidator implements ConstraintValidator<CurrentPassword, String> {
 
     private final UserService userService;
 
     @Override
-    public boolean isValid(String oldPassword, ConstraintValidatorContext context) {
+    public boolean isValid(String currentPassword, ConstraintValidatorContext context) {
 
-        if (oldPassword == null || oldPassword.isBlank()) {
+        if (currentPassword == null || currentPassword.isBlank()) {
             return true;
         }
 
@@ -24,6 +24,6 @@ public class OldPasswordValidator implements ConstraintValidator<OldPassword, St
                 .getAuthentication()
                 .getName();
 
-        return userService.checkOldPassword(email, oldPassword);
+        return userService.checkCurrentPassword(email, currentPassword);
     }
 }

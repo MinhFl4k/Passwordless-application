@@ -14,7 +14,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
 
     private static final int MAX_PASSWORD_ATTEMPTS = 5;
     private static final int MAX_OTP_ATTEMPTS = 5;
-    private static final long LOCK_MINUTES = 15;
+    private static final long LOCK_MINUTES = 30;
 
     private final UserRepository userRepository;
 

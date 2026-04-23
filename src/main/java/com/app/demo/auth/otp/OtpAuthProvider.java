@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 
@@ -38,8 +39,14 @@ public class OtpAuthProvider implements AuthenticationProvider {
         String email = authentication.getName();
         String otp = authentication.getCredentials().toString();
 
-        CustomUserDetails userDetails =
-                (CustomUserDetails) userDetailsService.loadUserByUsername(email);
+        CustomUserDetails userDetails;
+
+        try {
+            userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(email.trim());
+        } catch (UsernameNotFoundException ex) {
+            throw new BadCredentialsException(ErrorMessage.USER_NOT_FOUND.getMessage());
+        }
+
         userDetailsChecker.check(userDetails);
         User user = userDetails.getUser();
 

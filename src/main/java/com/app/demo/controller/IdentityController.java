@@ -7,6 +7,7 @@ import com.app.demo.service.EmailService;
 import com.app.demo.service.MagicLinkLoginService;
 import com.app.demo.service.OtpLoginService;
 import com.app.demo.service.UserService;
+import com.app.demo.validation.sequence.ValidationSequence;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,7 +49,7 @@ public class IdentityController {
 
     @PostMapping("/new-login")
     public String handleNewLogin(
-            @Valid @ModelAttribute("emailRequest") EmailRequestDto emailRequestDTO,
+            @Validated(ValidationSequence.class) @ModelAttribute("emailRequest") EmailRequestDto emailRequestDTO,
             BindingResult bindingResult,
             HttpSession session,
             RedirectAttributes redirectAttributes,
@@ -65,7 +67,7 @@ public class IdentityController {
 
         String email = emailRequestDTO.getEmail();
 
-        String type = "totp";
+        String type = "otp";
 
         try {
             if (type.equalsIgnoreCase("otp")) {
@@ -171,6 +173,26 @@ public class IdentityController {
         return "login";
     }
 
+    @GetMapping("/login-with-otp")
+    public String showOtpLoginPage(HttpSession session, Model model, Authentication authentication) {
+
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/home";
+        }
+        Object error = session.getAttribute("FLASH_ERROR");
+
+        if (error != null) {
+            model.addAttribute("error", error);
+            session.removeAttribute("FLASH_ERROR");
+        }
+        model.addAttribute("emailRequest", new EmailRequestDto());
+        model.addAttribute("email", session.getAttribute("OTP_LOGIN_EMAIL"));
+        session.setAttribute("OTP_LOGIN_FLOW", "OLD_FLOW");
+
+        return "login-with-otp";
+    }
+
     @GetMapping("/login-with-totp")
     public String showTotpLoginPage(
             HttpSession session,
@@ -206,9 +228,30 @@ public class IdentityController {
         return "login-with-link";
     }
 
+    @PostMapping("/send-otp")
+    public String sendOtp(
+            @Validated(ValidationSequence.class) @ModelAttribute("emailRequest") EmailRequestDto emailRequestDTO,
+            BindingResult bindingResult,
+            HttpSession session
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "login-with-otp";
+        }
+        String email = emailRequestDTO.getEmail();
+        try {
+            String otp = loginWithOtpService.generateOtp(email);
+            emailService.sendOtp(email, otp);
+            session.setAttribute("OTP_LOGIN_EMAIL", email);
+
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+        }
+        return "redirect:/login-with-otp?sent=true";
+    }
+
     @PostMapping("/auth/send-link-login")
     public String sendMagicLink(
-            @Valid @ModelAttribute("emailRequest") EmailRequestDto emailRequestDTO,
+            @Validated(ValidationSequence.class) @ModelAttribute("emailRequest") EmailRequestDto emailRequestDTO,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes
     ) {
@@ -244,47 +287,6 @@ public class IdentityController {
             System.err.println(e.getMessage());
             return "error";
         }
-    }
-
-    @GetMapping("/login-with-otp")
-    public String showOtpLoginPage(HttpSession session, Model model, Authentication authentication) {
-
-        if (authentication != null && authentication.isAuthenticated()
-                && !(authentication instanceof AnonymousAuthenticationToken)) {
-            return "redirect:/home";
-        }
-        Object error = session.getAttribute("FLASH_ERROR");
-
-        if (error != null) {
-            model.addAttribute("error", error);
-            session.removeAttribute("FLASH_ERROR");
-        }
-        model.addAttribute("emailRequest", new EmailRequestDto());
-        model.addAttribute("email", session.getAttribute("OTP_LOGIN_EMAIL"));
-        session.setAttribute("OTP_LOGIN_FLOW", "OLD_FLOW");
-
-        return "login-with-otp";
-    }
-
-    @PostMapping("/send-otp")
-    public String sendOtp(
-            @Valid @ModelAttribute("emailRequest") EmailRequestDto emailRequestDTO,
-            BindingResult bindingResult,
-            HttpSession session
-    ) {
-        if (bindingResult.hasErrors()) {
-            return "login-with-otp";
-        }
-        String email = emailRequestDTO.getEmail();
-        try {
-            String otp = loginWithOtpService.generateOtp(email);
-            emailService.sendOtp(email, otp);
-            session.setAttribute("OTP_LOGIN_EMAIL", email);
-
-        } catch (RuntimeException e) {
-            System.err.println(e.getMessage());
-        }
-        return "redirect:/login-with-otp?sent=true";
     }
 
     @GetMapping("/signup")

@@ -16,7 +16,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 
 @Component
@@ -33,11 +36,17 @@ public class TotpAuthProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String email = (String) authentication.getPrincipal();
+        String email = authentication.getName();
         String totp = authentication.getCredentials().toString();
 
-        CustomUserDetails userDetails =
-                (CustomUserDetails) userDetailsService.loadUserByUsername(email);
+        CustomUserDetails userDetails;
+
+        try {
+            userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(email.trim());
+        } catch (UsernameNotFoundException ex) {
+            throw new BadCredentialsException(ErrorMessage.USER_NOT_FOUND.getMessage());
+        }
+
         userDetailsChecker.check(userDetails);
         User user = userDetails.getUser();
         String secret = user.getSecret();

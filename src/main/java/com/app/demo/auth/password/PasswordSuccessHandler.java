@@ -1,4 +1,4 @@
-package com.app.demo.auth.passwords;
+package com.app.demo.auth.password;
 
 import com.app.demo.repository.UserRepository;
 import com.app.demo.service.LoginAttemptService;

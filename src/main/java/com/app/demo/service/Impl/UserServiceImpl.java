@@ -174,10 +174,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean checkOldPassword(String email, String oldPassword) {
+    public boolean checkCurrentPassword(String email, String currentPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException(ErrorMessage.USER_NOT_FOUND.getMessage()));
 
-        return passwordEncoder.matches(oldPassword, user.getPassword());
+        return passwordEncoder.matches(currentPassword, user.getPassword());
     }
 }

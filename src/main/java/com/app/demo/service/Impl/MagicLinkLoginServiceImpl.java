@@ -45,10 +45,14 @@ public class MagicLinkLoginServiceImpl implements MagicLinkLoginService {
 
     private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
 
-    private final String MAGIC_LINK = "http://localhost:8080/auth/link-login-process?token=";
+    @Value("${token.expired}")
+    private long TOKEN_EXPIRED;
 
-    @Value("${token.expiration}")
-    private long expiration;
+    @Value("${timeout.expired}")
+    private long TIMEOUT_EXPIRED;
+
+    @Value("${magic.link.url}")
+    private String MAGIC_LINK_URL;
 
     @Transactional
     public void sendLink(String email) {
@@ -58,9 +62,9 @@ public class MagicLinkLoginServiceImpl implements MagicLinkLoginService {
         if (lastCreatedToken.isPresent()) {
             LoginToken lastToken = lastCreatedToken.get();
             LocalDateTime allowedTime = lastToken.getCreatedAt()
-                    .plusSeconds(expiration);
+                    .plusSeconds(TOKEN_EXPIRED);
             if (LocalDateTime.now().isBefore(allowedTime)) {
-                throw new RuntimeException("Please wait " + expiration + " seconds before sending the link again");
+                throw new RuntimeException("Please wait " + TIMEOUT_EXPIRED + " seconds before sending the link again");
             }
         }
 
@@ -68,7 +72,7 @@ public class MagicLinkLoginServiceImpl implements MagicLinkLoginService {
 
         String token = jwtService.generateToken(email);
 
-        String link = MAGIC_LINK + token;
+        String link = MAGIC_LINK_URL + token;
 
         LoginToken oneTimeToken = new LoginToken();
         oneTimeToken.setEmail(email);

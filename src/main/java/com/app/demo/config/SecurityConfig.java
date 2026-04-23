@@ -1,7 +1,7 @@
 package com.app.demo.config;
 
-import com.app.demo.auth.passwords.PasswordFailureHandler;
-import com.app.demo.auth.passwords.PasswordSuccessHandler;
+import com.app.demo.auth.password.PasswordFailureHandler;
+import com.app.demo.auth.password.PasswordSuccessHandler;
 import com.app.demo.auth.totp.TotpAuthFilter;
 import com.app.demo.auth.totp.TotpAuthProvider;
 import com.app.demo.auth.totp.TotpFailureHandler;

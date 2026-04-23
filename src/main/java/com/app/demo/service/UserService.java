@@ -37,8 +37,8 @@ public interface UserService {
             ChangePasswordDto changePasswordDTO
     );
 
-    boolean checkOldPassword(
+    boolean checkCurrentPassword(
             String email,
-            String oldPassword
+            String currentPassword
     );
 }

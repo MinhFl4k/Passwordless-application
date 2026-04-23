@@ -25,7 +25,7 @@
 <br><br><br><br><br><br><br>
 
 <div class="container">
-    <h1>Login using code</h1>
+    <h1>Login with Email OTP</h1>
 
     <form th:action="@{/send-otp}" th:object="${emailRequest}" method="post">
         <div class="form-group">
@@ -35,7 +35,7 @@
                 <span th:errors="*{email}"></span>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary" id="sendCodeBtn">Send OTP</button>
+        <button type="submit" class="btn btn-primary" id="sendAuthBtn">Send OTP</button>
     </form>
 
     <hr>
@@ -43,7 +43,7 @@
     <form th:action="@{/otp-login-process}" method="post">
 
         <div class="form-group">
-            <label>OTP code</label>
+            <label>Login code</label>
             <input type="number" name="otp" class="form-control">
         </div>
         <div th:if="${error}" class="alert alert-danger">

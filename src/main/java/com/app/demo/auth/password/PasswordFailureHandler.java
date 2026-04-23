@@ -1,4 +1,4 @@
-package com.app.demo.auth.passwords;
+package com.app.demo.auth.password;
 
 import com.app.demo.enums.ErrorMessage;
 import com.app.demo.model.User;

@@ -27,26 +27,27 @@ public class TotpLoginServiceImpl implements TotpLoginService {
     private final UserRepository userRepository;
 
     @Value("${totp.application.name}")
-    private String secret;
+    private String SECRET;
 
     @Value("${totp.application.time}")
-    private String time;
+    private String TIME;
 
-    private final String GOOGLE_AUTH_SECRET = "otpauth://totp/%s:%s?secret=%s&issuer=%s";
+    @Value("${totp.application.url}")
+    private String AUTH_SECRET_URL;
 
     @Override
     public String generateOTPProtocol(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorMessage.USER_NOT_FOUND.getMessage()));
 
-        String issuer = secret;
+        String issuer = SECRET;
         String totpSecret = user.getSecret().trim();
 
         String encodedIssuer = URLEncoder.encode(issuer, StandardCharsets.UTF_8);
         String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
 
         return String.format(
-                GOOGLE_AUTH_SECRET,
+                AUTH_SECRET_URL,
                 encodedIssuer,
                 encodedEmail,
                 totpSecret,
@@ -71,7 +72,7 @@ public class TotpLoginServiceImpl implements TotpLoginService {
         }
 
         try {
-            if (!TotpUtil.verifyCode(secret, totpKey, Integer.parseInt(time))) {
+            if (!TotpUtil.verifyCode(secret, totpKey, Integer.parseInt(TIME))) {
                 return new OtpResponseDto(OtpStatus.INVALID);
             }
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {

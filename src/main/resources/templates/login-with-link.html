@@ -25,7 +25,7 @@
 <br><br><br><br><br><br><br>
 
 <div class="container">
-    <h1>Login instantly with email</h1>
+    <h1>Login with magic link</h1>
 
     <form th:action="@{/auth/send-link-login}" th:object="${emailRequest}" method="post">
         <div class="form-group">
@@ -38,7 +38,7 @@
         <div th:if="${#fields.hasErrors('email')}" class="text-danger">
             <span th:errors="*{email}"></span>
         </div>
-        <button type="submit" class="btn btn-primary" id="sendCodeBtn">Send link to email</button>
+        <button type="submit" class="btn btn-primary" id="sendAuthBtn">Send link to email</button>
         <a href="/" th:href="@{/login}" class="btn btn-danger">Back</a>
     </form>
     <hr>

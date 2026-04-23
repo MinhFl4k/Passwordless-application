@@ -29,14 +29,18 @@ public class OtpAuthFilter extends UsernamePasswordAuthenticationFilter {
         }
 
         String otp = request.getParameter("otp");
-        String email = request.getSession().getAttribute("OTP_LOGIN_EMAIL").toString();
 
-        email = (email != null) ? email.trim() : "";
+        Object emailAttr = request.getSession().getAttribute("OTP_LOGIN_EMAIL");
+        if (emailAttr == null) {
+            throw new AuthenticationServiceException(ErrorMessage.EMAIL_REQUIRED.getMessage());
+        }
+        String email = emailAttr.toString().trim();
         otp = (otp != null) ? otp.trim() : "";
-
         if (email.isEmpty()) {
-            throw new AuthenticationServiceException(ErrorMessage.USER_NOT_FOUND.getMessage());
-        } else if (otp.isEmpty()) {
+            throw new AuthenticationServiceException(ErrorMessage.EMAIL_REQUIRED.getMessage());
+        }
+
+        if (otp.isEmpty()) {
             throw new AuthenticationServiceException(OtpStatus.NOT_FOUND.getMessage());
         }
 

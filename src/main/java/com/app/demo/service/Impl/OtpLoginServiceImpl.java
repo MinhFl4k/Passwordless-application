@@ -24,8 +24,11 @@ public class OtpLoginServiceImpl implements OtpLoginService {
 
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${token.expiration}")
-    private long expiration;
+    @Value("${token.expired}")
+    private long TOKEN_EXPIRED;
+
+    @Value("${timeout.expired}")
+    private long TIMEOUT_EXPIRED;
 
     @Transactional
     public String generateOtp(String email) {
@@ -34,9 +37,9 @@ public class OtpLoginServiceImpl implements OtpLoginService {
         if (lastCreatedOtp.isPresent()) {
             OtpCode lastOtp = lastCreatedOtp.get();
             LocalDateTime allowedTime = lastOtp.getCreatedAt()
-                    .plusSeconds(expiration);
+                    .plusSeconds(TOKEN_EXPIRED);
             if (LocalDateTime.now().isBefore(allowedTime)) {
-                throw new RuntimeException("Please wait " + expiration + " seconds then try again");
+                throw new RuntimeException("Please wait " + TIMEOUT_EXPIRED + " seconds then try again");
             }
         }
 
