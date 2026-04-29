@@ -2,7 +2,9 @@ package com.app.demo.controller;
 
 import com.app.demo.dto.request.ChangePasswordDto;
 import com.app.demo.dto.request.UserUpdateDto;
+import com.app.demo.dto.response.PasskeyResponseDto;
 import com.app.demo.dto.response.UserResponseDto;
+import com.app.demo.service.PasskeyManageService;
 import com.app.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,14 +15,19 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+
+    private final PasskeyManageService passkeyManageService;
 
     @GetMapping("/home")
     public String home(Authentication authentication, Model model) {
@@ -47,12 +54,17 @@ public class UserController {
     public String updateProfile(
             @Valid @ModelAttribute("user") UserUpdateDto userDto,
             BindingResult result,
-            Authentication authentication) {
+            Authentication authentication,
+            RedirectAttributes redirectAttributes
+    ) {
         if (result.hasErrors()) {
             return "edit";
         }
         try {
-            userService.updateUserInfo(authentication, userDto);
+            boolean emailChanged = userService.updateUserInfo(authentication, userDto);
+            if (emailChanged) {
+                redirectAttributes.addFlashAttribute("successMessage", "Please check your email inbox");
+            }
         } catch (RuntimeException e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -84,5 +96,22 @@ public class UserController {
         }
 
         return "redirect:/home";
+    }
+
+    @GetMapping("/account-passkey")
+    public String showAccountPasskeyPage(Authentication authentication, Model model) {
+        String username = authentication.getName();
+        List<PasskeyResponseDto> passkeys = this.passkeyManageService.findPasskeysByUsername(username);
+        model.addAttribute("passkeys", passkeys);
+        return "account-passkey";
+    }
+
+    @PostMapping("/passkeys/delete")
+    public String deletePasskey(
+            @RequestParam("credentialId") String credentialId,
+            Authentication authentication) {
+        String username = authentication.getName();
+        this.passkeyManageService.deletePasskeyForUser(username, credentialId);
+        return "redirect:/account-passkey";
     }
 }

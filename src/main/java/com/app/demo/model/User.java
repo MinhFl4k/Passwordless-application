@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "User")
@@ -38,4 +39,10 @@ public class User {
     Integer otpFailedAttempts = 0;
 
     LocalDateTime lockedUntil;
+
+    @Column(nullable = false)
+    private boolean verified;
+
+    @ManyToMany
+    Set<Role> roles;
 }

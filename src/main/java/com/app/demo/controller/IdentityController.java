@@ -3,8 +3,9 @@ package com.app.demo.controller;
 import com.app.demo.dto.request.EmailRequestDto;
 import com.app.demo.dto.request.UserSignupDto;
 import com.app.demo.enums.ErrorMessage;
+import com.app.demo.enums.UserTokenType;
 import com.app.demo.service.EmailService;
-import com.app.demo.service.MagicLinkLoginService;
+import com.app.demo.service.TokenLoginService;
 import com.app.demo.service.OtpLoginService;
 import com.app.demo.service.UserService;
 import com.app.demo.validation.sequence.ValidationSequence;
@@ -32,9 +33,9 @@ public class IdentityController {
 
     private final EmailService emailService;
 
-    private final OtpLoginService loginWithOtpService;
+    private final OtpLoginService otpLoginService;
 
-    private final MagicLinkLoginService loginWithLinkService;
+    private final TokenLoginService tokenLoginService;
 
     @GetMapping("/new-login")
     public String showNewLoginPage(Authentication authentication, Model model) {
@@ -72,7 +73,7 @@ public class IdentityController {
         try {
             if (type.equalsIgnoreCase("otp")) {
 
-                String otp = loginWithOtpService.generateOtp(email);
+                String otp = otpLoginService.generateOtp(email);
                 emailService.sendOtp(email, otp);
                 session.setAttribute("OTP_LOGIN_EMAIL", email);
 
@@ -81,7 +82,8 @@ public class IdentityController {
 
                 session.setAttribute("TOTP_LOGIN_EMAIL", email);
                 return "redirect:/new-login-with-totp";
-            } else {loginWithLinkService.sendLink(email);
+            } else {
+                tokenLoginService.sendUserTokenLink(email, UserTokenType.LOGIN);
 
                 session.setAttribute("email", email);
                 redirectAttributes.addFlashAttribute("email", email);
@@ -239,7 +241,7 @@ public class IdentityController {
         }
         String email = emailRequestDTO.getEmail();
         try {
-            String otp = loginWithOtpService.generateOtp(email);
+            String otp = otpLoginService.generateOtp(email);
             emailService.sendOtp(email, otp);
             session.setAttribute("OTP_LOGIN_EMAIL", email);
 
@@ -250,7 +252,7 @@ public class IdentityController {
     }
 
     @PostMapping("/auth/send-link-login")
-    public String sendMagicLink(
+    public String sendLoginLink(
             @Validated(ValidationSequence.class) @ModelAttribute("emailRequest") EmailRequestDto emailRequestDTO,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes
@@ -262,7 +264,7 @@ public class IdentityController {
         String email = emailRequestDTO.getEmail();
 
         try {
-            loginWithLinkService.sendLink(email);
+            tokenLoginService.sendUserTokenLink(email, UserTokenType.LOGIN);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Please check your email inbox");
         } catch (RuntimeException e) {
@@ -271,18 +273,53 @@ public class IdentityController {
         return "redirect:/login-with-link";
     }
 
-    @GetMapping("/auth/link-login-process")
-    public String magicLinkLoginProcess(
+    @PostMapping("/auth/send-link-verify")
+    public String sendVerifyLink(
+            Authentication authentication,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            return "redirect:/login";
+        }
+        String email = authentication.getName();
+
+        try {
+            tokenLoginService.sendUserTokenLink(email, UserTokenType.VERIFY);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Please check your email inbox");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/home";
+    }
+
+    @GetMapping("/auth/login")
+    public String userTokenLoginProcess(
             @RequestParam String token,
             HttpServletRequest request,
             HttpSession session
     ) {
         try {
-            loginWithLinkService.loginWithLink(token, request);
+            tokenLoginService.loginWithUserToken(token, request);
             return "redirect:/home";
         } catch (org.springframework.security.authentication.LockedException e) {
             session.setAttribute("FLASH_ERROR", ErrorMessage.ACCOUNT_LOCKED.getMessage());
             return "redirect:/account-locked";
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            return "error";
+        }
+    }
+
+    @GetMapping("/auth/verify")
+    public String userTokenVerifyProcess(
+            @RequestParam String token,
+            HttpServletRequest request,
+            HttpSession session
+    ) {
+        try {
+            tokenLoginService.verifyWithUserToken(token, request);
+            return "redirect:/account-verified";
         } catch (RuntimeException e) {
             System.err.println(e.getMessage());
             return "error";
@@ -319,5 +356,10 @@ public class IdentityController {
             session.removeAttribute("FLASH_ERROR");
         }
         return "account-locked";
+    }
+
+    @GetMapping("/account-verified")
+    public String showAccountVerifiedPage() {
+        return "account-verified";
     }
 }

@@ -7,6 +7,7 @@
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script th:src="@{/js/util.js}"></script>
+    <script th:src="@{/js/auth.js}"></script>
 </head>
 
 <style>
@@ -63,7 +64,7 @@
             </p>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" th:if="${user.verified}">
             <form th:action="@{/edit-profile}" method="get" style="display:inline-block;">
                 <button type="submit" class="btn btn-primary">
                     Edit profile
@@ -82,6 +83,29 @@
                    value="Add One-Time password"
                    onClick="createQRCode();"
             />
+            <form th:action="@{/account-passkey}" method="get" style="display:inline-block;">
+                <button type="submit" class="btn btn-primary">
+                    Add passkey
+                </button>
+            </form>
+        </div>
+        <div class="form-group">
+            <form th:if="${!user.verified}"
+                  th:action="@{/auth/send-link-verify}"
+                  method="post"
+                  style="display:inline-block;">
+                <button type="submit" class="btn btn-danger">
+                    Verify your account
+                </button>
+            </form>
+        </div>
+        <div class="form-group">
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger">
+                <span th:text="${errorMessage}"></span>
+            </div>
         </div>
         <form th:action="@{/logout}" method="post">
             <div class="form-group">

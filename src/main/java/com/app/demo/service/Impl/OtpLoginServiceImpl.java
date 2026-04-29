@@ -1,7 +1,6 @@
 package com.app.demo.service.Impl;
 
 import com.app.demo.dto.response.OtpResponseDto;
-import com.app.demo.enums.ErrorMessage;
 import com.app.demo.enums.OtpStatus;
 import com.app.demo.model.OtpCode;
 import com.app.demo.repository.OtpCodeRepository;
@@ -24,11 +23,8 @@ public class OtpLoginServiceImpl implements OtpLoginService {
 
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${token.expired}")
-    private long TOKEN_EXPIRED;
-
-    @Value("${timeout.expired}")
-    private long TIMEOUT_EXPIRED;
+    @Value("${send.code.token.timeout}")
+    private long SEND_CODE_TIMEOUT;
 
     @Transactional
     public String generateOtp(String email) {
@@ -37,9 +33,9 @@ public class OtpLoginServiceImpl implements OtpLoginService {
         if (lastCreatedOtp.isPresent()) {
             OtpCode lastOtp = lastCreatedOtp.get();
             LocalDateTime allowedTime = lastOtp.getCreatedAt()
-                    .plusSeconds(TOKEN_EXPIRED);
+                    .plusSeconds(SEND_CODE_TIMEOUT);
             if (LocalDateTime.now().isBefore(allowedTime)) {
-                throw new RuntimeException("Please wait " + TIMEOUT_EXPIRED + " seconds then try again");
+                throw new RuntimeException("Please wait " + SEND_CODE_TIMEOUT + " seconds then try again");
             }
         }
 

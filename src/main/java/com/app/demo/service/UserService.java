@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication;
 
 public interface UserService {
 
-    void refreshAuthentication(User savedUser, Authentication authentication);
+    void updateAuthenticationPrincipal(User savedUser, Authentication authentication);
 
     void signupUser(
             UserSignupDto userSignupDto
@@ -27,7 +27,7 @@ public interface UserService {
             Authentication authentication
     );
 
-    void updateUserInfo(
+    boolean updateUserInfo(
             Authentication authentication,
             UserUpdateDto userDto
     );
@@ -41,4 +41,6 @@ public interface UserService {
             String email,
             String currentPassword
     );
+
+    Long getLoggedInUserId(Authentication authentication);
 }

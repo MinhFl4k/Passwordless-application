@@ -10,12 +10,12 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "LoginToken")
+@Table(name = "UserToken")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoginToken {
+public class UserToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -24,5 +24,6 @@ public class LoginToken {
     String token;
     LocalDateTime expiryTime;
     LocalDateTime createdAt;
+    String type;
     boolean used;
 }

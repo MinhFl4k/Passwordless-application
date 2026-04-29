@@ -5,8 +5,6 @@ import com.app.demo.auth.password.PasswordSuccessHandler;
 import com.app.demo.auth.totp.TotpAuthFilter;
 import com.app.demo.auth.totp.TotpAuthProvider;
 import com.app.demo.auth.totp.TotpFailureHandler;
-import com.app.demo.dto.common.CustomUserDetails;
-import com.app.demo.enums.AuthProvider;
 import com.app.demo.auth.otp.OtpAuthFilter;
 import com.app.demo.auth.otp.OtpAuthProvider;
 import com.app.demo.auth.otp.OtpFailureHandler;
@@ -17,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -42,6 +39,8 @@ public class SecurityConfig {
     private final PasswordSuccessHandler passwordSuccessHandler;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final String LOCALHOST = "http://localhost:8080";
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
@@ -75,8 +74,7 @@ public class SecurityConfig {
         totpFilter.setFilterProcessesUrl("/totp-login-process");
         totpFilter.setAuthenticationFailureHandler(totpFailureHandler);
 
-        http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authorize -> authorize
+        http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/new-login",
                                 "/new-login-with-otp",
@@ -92,19 +90,10 @@ public class SecurityConfig {
                                 "/totp-login-process",
                                 "/send-otp",
                                 "/account-locked",
+                                "/account-verified",
                                 "/css/**",
                                 "/js/**"
                         ).permitAll()
-
-                        .requestMatchers("/change-password")
-                        .access((auth, context) -> {
-                            Object principal = auth.get().getPrincipal();
-                            if (principal instanceof CustomUserDetails userDetails) {
-                                return new AuthorizationDecision(userDetails.getProvider() == AuthProvider.LOCAL);
-                            }
-                            return new AuthorizationDecision(false);
-                        })
-
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(otpFilter, UsernamePasswordAuthenticationFilter.class)
@@ -128,6 +117,11 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .clearAuthentication(true)
                         .permitAll()
+                )
+                .requestCache(cache -> cache.disable())
+                .webAuthn(webAuthn -> webAuthn
+                        .rpId("localhost")
+                        .allowedOrigins(LOCALHOST)
                 )
                 .headers(headers -> headers
                         .cacheControl(cache -> {})

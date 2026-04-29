@@ -3,9 +3,12 @@
 <head>
     <title>Login</title>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
     <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script th:src="@{/js/login-passkey.js}"></script>
 </head>
 <style>
     .navbar {
@@ -49,6 +52,15 @@
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Log In</button>
         </div>
+
+        <div class="form-group passkey-login-box">
+            <button type="button" class="btn btn-success" onclick="loginWithPasskey()">
+                <i class="fa fa-key"></i> Login with Passkey
+            </button>
+        </div>
+
+        <div id="login-passkey-message" class="text-info"></div>
+
         <div class="form-group">
             <span> Don't have an account? <a href="/" th:href="@{/signup}">Signup here</a></span>
         </div>

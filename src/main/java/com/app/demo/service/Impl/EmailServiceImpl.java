@@ -1,5 +1,6 @@
 package com.app.demo.service.Impl;
 
+import com.app.demo.enums.UserTokenType;
 import com.app.demo.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
@@ -23,14 +24,12 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendOneTimeLink(String toEmail, String link) {
+    public void sendUserTokenLink(String toEmail, String link, UserTokenType userTokenType) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
-        message.setSubject("Your login link");
-        message.setText("Click this link to login:\n" + link);
+        message.setSubject(userTokenType.getSubject());
+        message.setText(userTokenType.getMessage() + link);
 
         mailSender.send(message);
     }
-
-
 }

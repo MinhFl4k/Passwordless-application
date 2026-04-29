@@ -10,11 +10,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponseDto {
-    Long id;
-    String name;
-    String email;
-    String phone;
-    boolean verified;
-    boolean isLocalUser;
+public class PasskeyResponseDto {
+    String credentialId;
+    String label;
+    String created;
+    String lastUsed;
 }
