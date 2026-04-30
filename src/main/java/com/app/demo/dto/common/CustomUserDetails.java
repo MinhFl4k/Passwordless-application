@@ -4,6 +4,7 @@ import com.app.demo.enums.AuthProvider;
 import com.app.demo.model.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,9 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .toList();
     }
 
     @Override

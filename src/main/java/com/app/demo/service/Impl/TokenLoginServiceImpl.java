@@ -131,11 +131,11 @@ public class TokenLoginServiceImpl implements TokenLoginService {
             throw new RuntimeException(ErrorMessage.USER_NOT_FOUND.getMessage());
         }
 
-        var memberRole = roleRepository.findByName(RoleEnum.ROLE_MEMBER)
+        var userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException(ErrorMessage.INVALID_ROLE.getMessage()));
 
         user.getRoles().clear();
-        user.getRoles().add(memberRole);
+        user.getRoles().add(userRole);
 
         user.setVerified(true);
         userRepository.save(user);

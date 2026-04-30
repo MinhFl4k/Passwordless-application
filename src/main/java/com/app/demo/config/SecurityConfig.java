@@ -15,11 +15,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@EnableMethodSecurity
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -91,10 +93,23 @@ public class SecurityConfig {
                                 "/send-otp",
                                 "/account-locked",
                                 "/account-verified",
+                                "/access-denied",
                                 "/css/**",
                                 "/js/**"
                         ).permitAll()
+
+                        .requestMatchers(
+                                "/edit-profile",
+                                "/change-password",
+                                "/account-passkey",
+                                "/passkeys/delete",
+                                "/qrcode/get"
+                        ).hasAnyRole("ADMIN", "USER")
+
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/access-denied")
                 )
                 .addFilterBefore(otpFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(totpFilter, UsernamePasswordAuthenticationFilter.class)

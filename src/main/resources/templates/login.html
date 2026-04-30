@@ -40,7 +40,7 @@
 
     <form th:action="@{/login}" method="post">
         <div class="form-group">
-            <label class="control-label" for="username"> Email</label>
+            <label class="control-label" for="username"> Email </label>
             <input type="email" id="username" name="username" placeholder="Enter your email"  class="form-control">
         </div>
 
@@ -50,16 +50,12 @@
         </div>
 
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Log In</button>
+            <button type="submit" class="btn btn-danger">Login</button>
         </div>
 
-        <div class="form-group passkey-login-box">
-            <button type="button" class="btn btn-success" onclick="loginWithPasskey()">
-                <i class="fa fa-key"></i> Login with Passkey
-            </button>
+        <div class="form-group">
+            <a href="/" th:href="@{/new-login}" class="btn btn-success">Fast login</a>
         </div>
-
-        <div id="login-passkey-message" class="text-info"></div>
 
         <div class="form-group">
             <span> Don't have an account? <a href="/" th:href="@{/signup}">Signup here</a></span>
@@ -69,8 +65,11 @@
     <hr>
 
     <div style="display: flex;">
-        <a href="/" th:href="@{/new-login}" class="btn btn-success">Fast login</a>
+        <button type="button" class="btn btn-success" onclick="loginWithPasskey()">
+            <i class="fa fa-key"></i> Login with Passkey
+        </button>
     </div>
+    <div id="login-passkey-message" class="text-info"></div>
 
     <hr>
 
@@ -89,7 +88,7 @@
 
         <a href="/" th:href="@{/login-with-otp}" class="btn btn-danger">Login with Email OTP</a>
         <a href="/" th:href="@{/login-with-link}" class="btn btn-success">Login with Magic link</a>
-        <a href="/" th:href="@{/login-with-totp}" class="btn btn-success">Login with Authenticator app</a>
+        <a href="/" th:href="@{/login-with-totp}" class="btn btn-primary">Login with Authenticator app</a>
     </div>
     <hr>
 </div>

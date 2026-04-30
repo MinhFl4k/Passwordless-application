@@ -25,10 +25,10 @@ public class AppConfig {
                             .description("Admin role")
                             .build()));
 
-            Role memberRole = roleRepository.findByName(RoleEnum.ROLE_MEMBER)
+            Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
                     .orElseGet(() -> roleRepository.save(Role.builder()
-                            .name(RoleEnum.ROLE_MEMBER)
-                            .description("Member role")
+                            .name(RoleEnum.ROLE_USER)
+                            .description("User role")
                             .build()));
 
             Role guestRole = roleRepository.findByName(RoleEnum.ROLE_GUEST)

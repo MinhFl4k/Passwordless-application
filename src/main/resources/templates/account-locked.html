@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Account Locked</title>
+    <title>Account locked</title>
     <meta charset="UTF-8">
     <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -9,11 +9,10 @@
 <body>
 <div class="container" style="margin-top: 100px; max-width: 600px;">
     <div class="alert alert-danger">
-        <p th:text="${error}">
+        <h1 th:text="${error}">
             Your account is temporarily locked due to multiple failed sign-in attempts.
-        </p>
+        </h1>
     </div>
-
     <a th:href="@{/login}" class="btn btn-primary">Back to login</a>
 </div>
 </body>

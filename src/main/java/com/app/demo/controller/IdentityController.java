@@ -362,4 +362,9 @@ public class IdentityController {
     public String showAccountVerifiedPage() {
         return "account-verified";
     }
+
+    @GetMapping("/access-denied")
+    public String showAccessDeniedPage() {
+        return "access-denied";
+    }
 }

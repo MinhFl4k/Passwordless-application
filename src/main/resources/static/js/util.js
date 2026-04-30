@@ -12,6 +12,7 @@ function reloadOnBackForward() {
 
 window.createQRCode = function () {
     const $qr = $("#qr");
+    const $qrText = $("#qrText");
 
     $.ajax({
         type: "GET",
@@ -20,6 +21,7 @@ window.createQRCode = function () {
     })
         .done((base64Image) => {
             $qr.attr("src", `data:image/png;base64,${base64Image}`);
+            $qrText.show();
         })
         .fail(() => {
             alert("Error create QR code");

@@ -8,6 +8,7 @@ import com.app.demo.service.PasskeyManageService;
 import com.app.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,12 +31,12 @@ public class UserController {
     private final PasskeyManageService passkeyManageService;
 
     @GetMapping("/home")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'GUEST')")
     public String home(Authentication authentication, Model model) {
         UserResponseDto userResponseDto = userService.processPostLogin(authentication);
 
         model.addAttribute("needUpdateEmail",
                 userResponseDto.getEmail() == null || userResponseDto.getEmail().isEmpty());
-
         model.addAttribute("needUpdatePhone",
                 userResponseDto.getPhone() == null || userResponseDto.getPhone().isEmpty());
 
@@ -44,6 +45,7 @@ public class UserController {
     }
 
     @GetMapping("/edit-profile")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public String showEditPage(Authentication authentication, Model model) {
         UserResponseDto userResponseDto = userService.getUserInfo(authentication);
         model.addAttribute("user", userResponseDto);
@@ -51,6 +53,7 @@ public class UserController {
     }
 
     @PostMapping("/edit-profile")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public String updateProfile(
             @Valid @ModelAttribute("user") UserUpdateDto userDto,
             BindingResult result,
@@ -73,12 +76,14 @@ public class UserController {
     }
 
     @GetMapping("/change-password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public String showChangePasswordPage(Model model) {
         model.addAttribute("passwordDto", new ChangePasswordDto());
         return "change-password";
     }
 
     @PostMapping("/change-password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public String changePassword(
             @Valid @ModelAttribute("passwordDto") ChangePasswordDto changePasswordDTO,
             BindingResult result,
@@ -99,6 +104,7 @@ public class UserController {
     }
 
     @GetMapping("/account-passkey")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public String showAccountPasskeyPage(Authentication authentication, Model model) {
         String username = authentication.getName();
         List<PasskeyResponseDto> passkeys = this.passkeyManageService.findPasskeysByUsername(username);
@@ -107,6 +113,7 @@ public class UserController {
     }
 
     @PostMapping("/passkeys/delete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public String deletePasskey(
             @RequestParam("credentialId") String credentialId,
             Authentication authentication) {

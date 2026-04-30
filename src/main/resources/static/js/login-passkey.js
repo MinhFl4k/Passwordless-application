@@ -69,7 +69,7 @@ async function loginWithPasskey() {
 
         if (!optionsResponse.ok) {
             const text = await optionsResponse.text();
-            throw new Error(text || 'Không lấy được authentication options');
+            throw new Error(text || 'Cannot get authentication options');
         }
 
         const publicKeyOptions = await optionsResponse.json();

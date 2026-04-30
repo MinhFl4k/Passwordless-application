@@ -50,6 +50,11 @@ async function registerPasskey() {
             return;
         }
 
+        const labelInput = document.getElementById('passkeyLabel');
+                const passkeyLabel = labelInput && labelInput.value.trim()
+                    ? labelInput.value.trim()
+                    : 'My device';
+
         const { token, header } = getCsrf();
 
         // 1) Fetch registration options from Spring Security.
@@ -107,7 +112,7 @@ async function registerPasskey() {
                     clientExtensionResults: credential.getClientExtensionResults(),
                     authenticatorAttachment: credential.authenticatorAttachment
                 },
-                label: 'My device'
+                label: passkeyLabel
             }
         };
 
