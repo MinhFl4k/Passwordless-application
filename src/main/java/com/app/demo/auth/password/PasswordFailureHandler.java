@@ -8,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -59,11 +58,7 @@ public class PasswordFailureHandler implements AuthenticationFailureHandler {
             }
         }
 
-        if (exception instanceof BadCredentialsException) {
-            session.setAttribute("FLASH_ERROR", "Invalid email or password.");
-        } else {
-            session.setAttribute("FLASH_ERROR", "Login failed");
-        }
+        session.setAttribute("FLASH_ERROR", "Invalid email or password.");
 
         response.sendRedirect("/login");
     }

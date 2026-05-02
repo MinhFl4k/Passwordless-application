@@ -2,7 +2,6 @@ package com.app.demo.controller;
 
 import com.app.demo.dto.request.EmailRequestDto;
 import com.app.demo.dto.request.UserSignupDto;
-import com.app.demo.enums.ErrorMessage;
 import com.app.demo.enums.UserTokenType;
 import com.app.demo.service.EmailService;
 import com.app.demo.service.TokenLoginService;
@@ -303,7 +302,6 @@ public class IdentityController {
             tokenLoginService.loginWithUserToken(token, request);
             return "redirect:/home";
         } catch (org.springframework.security.authentication.LockedException e) {
-            session.setAttribute("FLASH_ERROR", ErrorMessage.ACCOUNT_LOCKED.getMessage());
             return "redirect:/account-locked";
         } catch (RuntimeException e) {
             System.err.println(e.getMessage());

@@ -1,5 +1,6 @@
 package com.app.demo.config;
 
+import com.app.demo.auth.common.AccountLockCheckFilter;
 import com.app.demo.auth.password.PasswordFailureHandler;
 import com.app.demo.auth.password.PasswordSuccessHandler;
 import com.app.demo.auth.totp.TotpAuthFilter;
@@ -39,6 +40,8 @@ public class SecurityConfig {
     private final PasswordFailureHandler passwordFailureHandler;
 
     private final PasswordSuccessHandler passwordSuccessHandler;
+
+    private final AccountLockCheckFilter accountLockCheckFilter;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -113,6 +116,7 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(otpFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(totpFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(accountLockCheckFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
